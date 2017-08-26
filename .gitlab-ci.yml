@@ -1,0 +1,20 @@
+stages:
+  - build
+
+packer build centos7 base:
+  stage: build
+  script:
+    - sh packer_build_centos7_base.sh
+    - docker run --rm -i -v $(pwd):/packer --entrypoint='/usr/bin/powershell' vmware/powerclicore /packer/packer/scripts/powercli_convert_to_template.ps1 -VM_NAME $VM_NAME -VSPHERE_SERVER $VSPHERE_SERVER -VSPHERE_PASSWORD $VSPHERE_PASSWORD -VSPHERE_USER $VSPHERE_USER
+  tags:
+    - packer
+  when: manual
+
+packer build centos7 mideyeserver:
+  stage: build
+  script:
+    - sh packer_build_centos7_mideyeserver.sh
+    - docker run --rm -i -v $(pwd):/packer --entrypoint='/usr/bin/powershell' vmware/powerclicore /packer/packer/scripts/powercli_convert_to_template.ps1 -VM_NAME centos7_mideyeserver -VSPHERE_SERVER $VSPHERE_SERVER -VSPHERE_PASSWORD $VSPHERE_PASSWORD -VSPHERE_USER $VSPHERE_USER
+  tags:
+    - packer
+  when: manual

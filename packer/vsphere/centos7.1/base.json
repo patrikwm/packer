@@ -1,0 +1,84 @@
+{
+    "builders": [
+    {
+      "type": "vmware-iso",
+      "format": "ovf",
+      "boot_command": [
+        "<tab> text ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ks.cfg<enter><wait>"
+      ],
+      "boot_wait": "10s",
+      "disk_size": 81920,
+      "guest_os_type": "centos-64",
+      "http_directory": "packer/http",
+      "iso_url": "{{user `iso_url`}}",
+      "iso_checksum_type": "{{user `iso_checksum_type`}}",
+      "iso_checksum": "{{user `iso_checksum`}}",
+      "ssh_username": "vagrant",
+      "ssh_password": "vagrant",
+      "ssh_port": 22,
+      "ssh_wait_timeout": "10000s",
+      "shutdown_command": "echo '/sbin/halt -h -p' > /tmp/shutdown.sh; echo 'vagrant'|sudo -S sh '/tmp/shutdown.sh'",
+      "tools_upload_flavor": "linux",
+      "tools_upload_path": "/tmp/vmware_tools_{{.Flavor}}.iso",
+      "headless": true,
+      "vmx_data": {
+        "memsize": "2048",
+        "numvcpus": "1",
+        "cpuid.coresPerSocket": "2"
+      }
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "execute_command": "echo 'vagrant'|sudo -S sh '{{.Path}}'",
+      "override": {
+        "vmware-iso": {
+          "scripts": [
+            "packer/scripts/centos_base.sh",
+            "packer/scripts/vagrant.sh",
+            "packer/scripts/ssh_keys.sh",
+            "packer/scripts/vmware.sh",
+            "packer/scripts/hgfs.sh",
+            "packer/scripts/remove_ifcfg-en.sh",
+            "packer/scripts/cleanup.sh",
+            "packer/scripts/zerodisk.sh"
+          ]
+        }
+      }
+    }
+  ],
+  "post-processors": [
+    {
+      "type": "vsphere",
+      "only": ["vmware-iso"],
+      "cluster": "{{user `vsphere_cluster`}}",
+      "host": "{{user `vsphere_server`}}",
+      "datacenter": "{{user `vsphere_datacenter`}}",
+      "username": "{{user `vsphere_user`}}",
+      "password": "{{user `vsphere_password`}}",
+      "datastore": "{{user `vsphere_datastore`}}",
+      "vm_name": "{{user `vm_name`}}",
+      "vm_folder": "{{user `vm_folder`}}",
+      "vm_network": "{{user `vm_network`}}",
+      "disk_mode": "thin",
+      "overwrite": true,
+      "insecure": true
+    }
+  ],
+  "variables":
+    {
+      "iso_url": "http://mirror.hh.se/centos/7/isos/x86_64/CentOS-7-x86_64-Minimal-1611.iso",
+      "iso_checksum_type": "MD5",
+      "iso_checksum": "d2ec6cfa7cf6d89e484aa2d9f830517c",
+      "vsphere_server": "{{env `VSPHERE_SERVER`}}",
+      "vsphere_user": "{{env `VSPHERE_USER`}}",
+      "vsphere_password": "{{env `VSPHERE_PASSWORD`}}",
+      "vsphere_datastore": "{{env `VSPHERE_DATASTORE`}}",
+      "vsphere_datacenter": "{{env `VSPHERE_DATACENTER`}}",
+      "vsphere_cluster": "{{env `VSPHERE_CLUSTER`}}",
+      "vm_name": "{{env `VM_NAME`}}",
+      "vm_network": "{{env `VM_NETWORK`}}",
+      "vm_folder": "{{env `VM_FOLDER`}}"
+    }
+}

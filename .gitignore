@@ -1,0 +1,5 @@
+iso/*.iso
+.idea
+.idea/*
+packer_cache
+packerlog.txt
