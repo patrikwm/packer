@@ -26,7 +26,7 @@ ISO files for each operating system that you want to install.
 
 ## Running the script
 
-Install all prerequisites. Then run either of the build scripts
+Install all prerequisites. Then run the build script.
 
 ```
 ./packer_build_centos7_base.sh
